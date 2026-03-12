@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="MedSchool" />
+  <meta name="theme-color" content="#4a6741" />
+  <title>Med School — USMLE Step 1</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+
+  <!-- React + Babel via CDN (cached by service worker after first load) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body, #root { height: 100%; width: 100%; overflow: hidden; background: #f5f0e8; }
+    body { overscroll-behavior: none; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- App logic (update this file to push new content) -->
+  <script type="text/babel" src="./app.js"></script>
+
+  <!-- Mount -->
+  <script type="text/babel">
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+
+  <!-- Service Worker registration -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").then(reg => {
+          // Check for updates every time the app is opened
+          reg.update();
+          reg.addEventListener("updatefound", () => {
+            const newSW = reg.installing;
+            newSW.addEventListener("statechange", () => {
+              if (newSW.state === "installed" && navigator.serviceWorker.controller) {
+                // New version available — show a subtle banner
+                const banner = document.createElement("div");
+                banner.innerHTML = `
+                  <div style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+                    background:#4a6741;color:white;padding:10px 18px;border-radius:20px;
+                    font-family:sans-serif;font-size:13px;font-weight:600;z-index:9999;
+                    box-shadow:0 4px 16px rgba(0,0,0,0.2);white-space:nowrap;cursor:pointer;"
+                    onclick="window.location.reload()">
+                    ✦ Update available — tap to refresh
+                  </div>`;
+                document.body.appendChild(banner);
+              }
+            });
+          });
+        });
+      });
+    }
+  </script>
+</body>
+</html>
